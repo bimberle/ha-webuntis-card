@@ -13,7 +13,7 @@ export interface TimetableResult {
 
 export interface TimetableData {
     timetable: Day[];
-    starttimes: StartTime[];
+    startTimetimes: StartTime[];
 }
 
 export interface StartTime {
@@ -28,13 +28,13 @@ export interface Day {
 
 export interface Lesson {
     classCount: Number;
-    ende: string;
+    endeTIme: string;
     fach: string;
     fachLang: string;
     lehrer: string;
     raum: string;
-    start: string;
-    tag: string;
+    startTime: string;
+    date: string;
     tagDate: Number;
     tagname: string;
     type: string;

@@ -54,7 +54,7 @@ export class HAWebUntisCard extends LitElement {
                                 <div class='hourheader'>&nbsp;</div>
                                 <div class='daydate'>&nbsp;</div>
                                 <div class='hours'>
-                                    ${this.timetable.data.starttimes.map( (time: StartTime) => {
+                                    ${this.timetable.data.startTimetimes.map( (time: StartTime) => {
                                         return html`
                                         <div class='lesson'>
                                             <div class=${this._getHourActiveStyle(time.key, 'hourheader') }>
@@ -74,16 +74,16 @@ export class HAWebUntisCard extends LitElement {
                                     ${day.value[0].tagname}
                                 </div>
                                 <div class='daydate'>
-                                    ${day.value[0].tag}
+                                    ${day.value[0].date}
                                 </div>
                                 <div class='lessons'>
                                 ${day.value.map((lesson: Lesson) => {
                                     return html`
                                     <div class='lesson'>
-                                        <div class=${this._getHourActiveStyle(lesson.start, 'lessonheader') }>
+                                        <div class=${this._getHourActiveStyle(lesson.startTime, 'lessonheader') }>
                                             ${lesson.fach != '' ? lesson.fach.substring(0,6) : '-'}
                                         </div>
-                                        <div class=${this._getHourActiveStyle(lesson.start, 'teacher') }>
+                                        <div class=${this._getHourActiveStyle(lesson.startTime, 'teacher') }>
                                             ${lesson.lehrer != '' ? lesson.lehrer.substring(0,12) : '-'}
                                         </div>
                                     </div>`;
