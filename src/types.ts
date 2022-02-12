@@ -38,4 +38,5 @@ export interface Lesson {
     tagDate: Number;
     tagname: string;
     type: string;
+    sondertext: string;
 }

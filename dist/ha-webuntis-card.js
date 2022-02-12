@@ -122,7 +122,10 @@
                     return $ `
                                     <div class='lesson'>
                                         <div class=${this._getHourActiveStyle(lesson.startTime, 'lessonheader')}>
-                                            ${lesson.fach != '' ? lesson.fach.substring(0, 6) : '-'}
+                                            <div class='fachtext'>
+                                                ${lesson.fach != '' ? lesson.fach.substring(0, 6) : '-'}
+                                            </div>
+                                            ${this._getSonderText(lesson)}
                                         </div>
                                         <div class=${this._getHourActiveStyle(lesson.startTime, 'teacher')}>
                                             ${lesson.lehrer != '' ? lesson.lehrer.substring(0, 12) : '-'}
@@ -147,6 +150,12 @@
             this.renderLesson(lesson);
         })}
         */
+        _getSonderText(lesson) {
+            if (lesson.sondertext != '')
+                return $ `<div class='sondertext'>${lesson.sondertext}</div>`;
+            else
+                return $ ``;
+        }
         _getHourActiveStyle(time, classprefix) {
             if (this.lastHour)
                 if (Number(time.substring(0, 2)) > Number(this.lastHour))

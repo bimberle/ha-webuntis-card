@@ -81,7 +81,10 @@ export class HAWebUntisCard extends LitElement {
                                     return html`
                                     <div class='lesson'>
                                         <div class=${this._getHourActiveStyle(lesson.startTime, 'lessonheader') }>
-                                            ${lesson.fach != '' ? lesson.fach.substring(0,6) : '-'}
+                                            <div class='fachtext'>
+                                                ${lesson.fach != '' ? lesson.fach.substring(0,6) : '-'}
+                                            </div>
+                                            ${this._getSonderText(lesson)}
                                         </div>
                                         <div class=${this._getHourActiveStyle(lesson.startTime, 'teacher') }>
                                             ${lesson.lehrer != '' ? lesson.lehrer.substring(0,12) : '-'}
@@ -110,6 +113,13 @@ export class HAWebUntisCard extends LitElement {
         this.renderLesson(lesson);
     })}
     */
+
+    private _getSonderText(lesson: Lesson) : TemplateResult {
+        if(lesson.sondertext != '')
+            return html`<div class='sondertext'>${lesson.sondertext}</div>`;
+        else
+            return html``;
+    }
 
     
     private _getHourActiveStyle(time: string, classprefix: string) : string {
