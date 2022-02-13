@@ -96,15 +96,17 @@
                                 <div class='daydate'>&nbsp;</div>
                                 <div class='hours'>
                                     ${this.timetable.data.startTimetimes.map((time) => {
-                return $ `
-                                        <div class='lesson'>
-                                            <div class=${this._getHourActiveStyle(time.key, 'hourheader')}>
-                                                ${time.key}
-                                            </div>
-                                            <div class=${this._getHourActiveStyle(time.key, 'hourend')}>
-                                                ${time.value}
-                                            </div>
-                                        </div>`;
+                if (this.lastHour == undefined || parseInt(this.lastHour) >= parseInt(time.key.substring(0, 2))) {
+                    return $ `
+                                            <div class='lesson'>
+                                                <div class=${this._getHourActiveStyle(time.key, 'hourheader')}>
+                                                    ${time.key}
+                                                </div>
+                                                <div class=${this._getHourActiveStyle(time.key, 'hourend')}>
+                                                    ${time.value}
+                                                </div>
+                                            </div>`;
+                }
             })}
                                 </div>
                             </div>
@@ -119,18 +121,17 @@
                                 </div>
                                 <div class='lessons'>
                                 ${day.value.map((lesson) => {
-                    return $ `
-                                    <div class='lesson'>
-                                        <div class=${this._getHourActiveStyle(lesson.startTime, 'lessonheader')}>
-                                            <div class='fachtext'>
-                                                ${lesson.fach != '' ? lesson.fach.substring(0, 6) : '-'}
+                    if (this.lastHour == undefined || parseInt(this.lastHour) >= parseInt(lesson.startTime.substring(0, 2))) {
+                        return $ `
+                                        <div class='lesson'>
+                                            <div class=${this._getHourActiveStyle(lesson.startTime, 'lessonheader')}>
+                                                    ${lesson.fach != '' ? lesson.fach.substring(0, 6) : '-'}
                                             </div>
-                                            ${this._getSonderText(lesson)}
-                                        </div>
-                                        <div class=${this._getHourActiveStyle(lesson.startTime, 'teacher')}>
-                                            ${lesson.lehrer != '' ? lesson.lehrer.substring(0, 12) : '-'}
-                                        </div>
-                                    </div>`;
+                                            <div class=${this._getHourActiveStyle(lesson.startTime, 'teacher')}>
+                                                ${lesson.lehrer != '' ? lesson.lehrer.substring(0, 12) : '-'}
+                                            </div>
+                                        </div>`;
+                    }
                 })}
                                 </div>
                             </div>`;
