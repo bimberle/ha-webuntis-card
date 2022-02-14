@@ -20,7 +20,7 @@ export class HAWebUntisCard extends LitElement {
     private timetable?: TimetableResult;
 
     @property({ attribute: false })
-    private lastHour?: string
+    private lastHour?: number
 
     private entity: string = "";
 
@@ -55,7 +55,7 @@ export class HAWebUntisCard extends LitElement {
                                 <div class='daydate'>&nbsp;</div>
                                 <div class='hours'>
                                     ${this.timetable.data.startTimetimes.map( (time: StartTime) => {
-                                        if(this.lastHour == undefined || parseInt(this.lastHour) >= parseInt(time.key.substring(0,2)))
+                                        if(this.lastHour == undefined || this.lastHour >= Number(time.key.substring(0,2)))
                                         {
                                             return html`
                                             <div class='lesson'>
@@ -81,7 +81,7 @@ export class HAWebUntisCard extends LitElement {
                                 </div>
                                 <div class='lessons'>
                                 ${day.value.map((lesson: Lesson) => {
-                                    if(this.lastHour == undefined || parseInt(this.lastHour) >= parseInt(lesson.startTime.substring(0,2)))
+                                    if(this.lastHour == undefined || this.lastHour >= Number(lesson.startTime.substring(0,2)))
                                     {
                                         return html`
                                         <div class='lesson'>
@@ -128,7 +128,7 @@ export class HAWebUntisCard extends LitElement {
     
     private _getHourActiveStyle(time: string, classprefix: string) : string {
         if(this.lastHour)
-            if(Number(time.substring(0,2)) > Number(this.lastHour))
+            if(Number(time.substring(0,2)) > this.lastHour)
                 return classprefix + 'inactive'
             else
                 return classprefix
