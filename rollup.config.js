@@ -19,7 +19,7 @@ const plugins = [
   copy({
     targets: [
       { src: 'dist/*', dest: '/Volumes/dockerfiles/configs/hass-config/www/custom_ui' },
-      { src: 'src/custom-element/ha-webuntis-card.ts', dest: '/Volumes/dockerfiles/configs/hass-config/www/custom_ui/' }
+      { src: 'src/custom-element/ha-webuntis-card.ts', dest: '/Volumes/dockerfiles/configs/hass-config/www/src/custom-element/' }
       
     ]
   })

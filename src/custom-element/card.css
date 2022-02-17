@@ -2,6 +2,8 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
+    display: flex;
+    flex-direction: row;
 }
 
 .card-content > div {
@@ -85,6 +87,7 @@
     text-align: center;
     height: 15px;
     color: var(--sidebar-selected-icon-color);
+    width: 70px;
 }
 .hourheaderinactive {
     text-align: center;
@@ -119,4 +122,18 @@
     opacity: 0.1;
     padding-bottom: 10px;
     color: var(--sidebar-selected-icon-color);
+}
+.next {
+    align-items: flex-end;
+    color: var(--sidebar-selected-icon-color);
+    cursor: pointer;
+}
+.last {
+    align-items: flex-end;
+    color: var(--sidebar-selected-icon-color);
+    cursor: pointer;
+}
+
+.cardTitle {
+    width: 80%;
 }

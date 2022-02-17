@@ -62,7 +62,7 @@
      * SPDX-License-Identifier: BSD-3-Clause
      */var n;null!=(null===(n=window.HTMLSlotElement)||void 0===n?void 0:n.prototype.assignedElements)?(o,n)=>o.assignedElements(n):(o,n)=>o.assignedNodes(n).filter((o=>o.nodeType===Node.ELEMENT_NODE));
 
-    var styles = ".truncate{white-space:nowrap;text-overflow:ellipsis;overflow:hidden;}.card-content > div{margin-bottom:8px;}.card-content > div:last-child{margin-bottom:0;}.entity-spacing:first-child{margin-top:0;}.entity-spacing:last-child{margin-bottom:0;}.entity-row{display:flex;align-items:center;}.entity-row .name{flex:1;margin:0 6px;}.entity-row .secondary{color:var(--primary-color);}.entity-row .icon{flex:0 0 40px;border-radius:50%;text-align:center;line-height:40px;margin-right:10px;}.days{display:flex;}.day{display:flex;flex-direction:column;}.dayheader{font-weight:bold;text-align:center;width:70px;color:var(--sidebar-selected-icon-color);}.hourheader{width:40px;color:var(--sidebar-selected-icon-color);}.hours{color:var(--sidebar-selected-icon-color);}.daydate{font-size:x-small;opacity:0.5;text-align:center;color:var(--sidebar-selected-icon-color);}.lessons{display:flex;flex-direction:column;}.lessonheader{text-align:center;height:15px;}.lessonheaderinactive{text-align:center;height:15px;opacity:0.1;}.hourheader{text-align:center;height:15px;color:var(--sidebar-selected-icon-color);}.hourheaderinactive{text-align:center;height:15px;color:var(--sidebar-selected-icon-color);opacity:0.1;}.teacher{font-size:x-small;text-align:center;opacity:0.5;padding-bottom:10px;}.teacherinactive{font-size:x-small;text-align:center;opacity:0.1;padding-bottom:10px;}.hourend{font-size:x-small;text-align:center;opacity:0.5;padding-bottom:10px;color:var(--sidebar-selected-icon-color);}.hourendinactive{font-size:x-small;text-align:center;opacity:0.1;padding-bottom:10px;color:var(--sidebar-selected-icon-color);}";
+    var styles = ".truncate{white-space:nowrap;text-overflow:ellipsis;overflow:hidden;display:flex;flex-direction:row;}.card-content > div{margin-bottom:8px;}.card-content > div:last-child{margin-bottom:0;}.entity-spacing:first-child{margin-top:0;}.entity-spacing:last-child{margin-bottom:0;}.entity-row{display:flex;align-items:center;}.entity-row .name{flex:1;margin:0 6px;}.entity-row .secondary{color:var(--primary-color);}.entity-row .icon{flex:0 0 40px;border-radius:50%;text-align:center;line-height:40px;margin-right:10px;}.days{display:flex;}.day{display:flex;flex-direction:column;}.dayheader{font-weight:bold;text-align:center;width:70px;color:var(--sidebar-selected-icon-color);}.hourheader{width:40px;color:var(--sidebar-selected-icon-color);}.hours{color:var(--sidebar-selected-icon-color);}.daydate{font-size:x-small;opacity:0.5;text-align:center;color:var(--sidebar-selected-icon-color);}.lessons{display:flex;flex-direction:column;}.lessonheader{text-align:center;height:15px;}.lessonheaderinactive{text-align:center;height:15px;opacity:0.1;}.hourheader{text-align:center;height:15px;color:var(--sidebar-selected-icon-color);width:70px;}.hourheaderinactive{text-align:center;height:15px;color:var(--sidebar-selected-icon-color);opacity:0.1;}.teacher{font-size:x-small;text-align:center;opacity:0.5;padding-bottom:10px;}.teacherinactive{font-size:x-small;text-align:center;opacity:0.1;padding-bottom:10px;}.hourend{font-size:x-small;text-align:center;opacity:0.5;padding-bottom:10px;color:var(--sidebar-selected-icon-color);}.hourendinactive{font-size:x-small;text-align:center;opacity:0.1;padding-bottom:10px;color:var(--sidebar-selected-icon-color);}.next{align-items:flex-end;color:var(--sidebar-selected-icon-color);cursor:pointer;}.last{align-items:flex-end;color:var(--sidebar-selected-icon-color);cursor:pointer;}.cardTitle{width:80%;}";
 
     //import { hasConfigOrEntityChanged } from "../has-changed";
     /**
@@ -75,18 +75,29 @@
             this.entity = "";
             this.entityObj = undefined;
             this.timetablestring = "";
+            this.startIndex = 0;
+            this.dayCount = 0;
         }
         /**
          * Renders the card when the update is requested (when any of the properties are changed)
          */
         render() {
-            if (this.timetable) {
+            var _a;
+            if (this.timetable != undefined) {
                 return $ `
             <ha-card>
                 ${this.cardTitle ? $ `
                 <div class="card-header">
                     <div class="truncate">
-                        ${this.cardTitle}
+                        <div class="cardTitle">
+                            ${this.cardTitle}
+                        </div>
+                        <div class="last" @click=${() => this._showLastWeek(this.startIndex)}>
+                            ${(this.startIndex - 5) > 0 ? $ `<ha-icon icon='mdi:chevron-left'></ha-icon>` : $ ``}
+                        </div>
+                        <div class="next" @click=${() => this._showNextWeek(this.startIndex)}>
+                            ${(this.startIndex + 5) <= this.dayCount ? $ `<ha-icon icon='mdi:chevron-right'></ha-icon>` : $ ``}
+                        </div>
                     </div>
                 </div>` : $ ``}
                 <div class="card-content">
@@ -95,46 +106,46 @@
                                 <div class='hourheader'>&nbsp;</div>
                                 <div class='daydate'>&nbsp;</div>
                                 <div class='hours'>
-                                    ${this.timetable.data.startTimetimes.map((time) => {
+                                    ${this.timetable.data.startTimetimes.map((time, index) => {
                 if (this.lastHour == undefined || this.lastHour >= Number(time.key.substring(0, 2))) {
                     return $ `
-                                            <div class='lesson'>
-                                                <div class=${this._getHourActiveStyle(time.key, 'hourheader')}>
-                                                    ${time.key}
-                                                </div>
-                                                <div class=${this._getHourActiveStyle(time.key, 'hourend')}>
-                                                    ${time.value}
-                                                </div>
-                                            </div>`;
+                                                <div class='lesson'>
+                                                    <div class=${this._getHourActiveStyle(time.key, 'hourheader')}>
+                                                        ${time.key}
+                                                    </div>
+                                                    <div class=${this._getHourActiveStyle(time.key, 'hourend')}>
+                                                        ${time.value}
+                                                    </div>
+                                                </div>`;
                 }
             })}
                                 </div>
                             </div>
-                        ${this.timetable.data.timetable.map((day) => {
+                        ${(_a = this.visibleTimetable) === null || _a === void 0 ? void 0 : _a.map((day, index) => {
                 return $ `
-                            <div class='day'>
-                                <div class='dayheader'>
-                                    ${day.value[0].tagname}
-                                </div>
-                                <div class='daydate'>
-                                    ${day.value[0].date}
-                                </div>
-                                <div class='lessons'>
-                                ${day.value.map((lesson) => {
+                                <div class='day'>
+                                    <div class='dayheader'>
+                                        ${day.value[0].tagname}
+                                    </div>
+                                    <div class='daydate'>
+                                        ${day.value[0].date}
+                                    </div>
+                                    <div class='lessons'>
+                                    ${day.value.map((lesson) => {
                     if (this.lastHour == undefined || this.lastHour >= Number(lesson.startTime.substring(0, 2))) {
                         return $ `
-                                        <div class='lesson'>
-                                            <div class=${this._getHourActiveStyle(lesson.startTime, 'lessonheader')}>
-                                                    ${lesson.fach != '' ? lesson.fach.substring(0, 6) : '-'}
-                                            </div>
-                                            <div class=${this._getHourActiveStyle(lesson.startTime, 'teacher')}>
-                                                ${lesson.lehrer != '' ? lesson.lehrer.substring(0, 12) : '-'}
-                                            </div>
-                                        </div>`;
+                                            <div class='lesson'>
+                                                <div class=${this._getHourActiveStyle(lesson.startTime, 'lessonheader')}>
+                                                        ${lesson.fach != '' ? lesson.fach.substring(0, 6) : '-'}
+                                                </div>
+                                                <div class=${this._getHourActiveStyle(lesson.startTime, 'teacher')}>
+                                                    ${lesson.lehrer != '' ? lesson.lehrer.substring(0, 12) : '-'}
+                                                </div>
+                                            </div>`;
                     }
                 })}
-                                </div>
-                            </div>`;
+                                    </div>
+                                </div>`;
                 //this.renderDay(day);
             })}
                     </div>
@@ -151,11 +162,18 @@
             this.renderLesson(lesson);
         })}
         */
-        _getSonderText(lesson) {
-            if (lesson.sondertext != '')
-                return $ `<div class='sondertext'>${lesson.sondertext}</div>`;
-            else
-                return $ ``;
+        _showNextWeek(currentIndex) {
+            var _a, _b;
+            this.startIndex = currentIndex + 5;
+            var ende = (this.startIndex + 5) > this.dayCount ? this.dayCount - 1 : this.startIndex + 5;
+            this.visibleTimetable = (_b = (_a = this.timetable) === null || _a === void 0 ? void 0 : _a.data.timetable.slice(this.startIndex, ende)) !== null && _b !== void 0 ? _b : [];
+        }
+        _showLastWeek(currentIndex) {
+            var _a, _b;
+            this.startIndex = currentIndex - 5;
+            if (this.startIndex < 0)
+                this.startIndex = 0;
+            this.visibleTimetable = (_b = (_a = this.timetable) === null || _a === void 0 ? void 0 : _a.data.timetable.slice(this.startIndex, this.startIndex + 5)) !== null && _b !== void 0 ? _b : [];
         }
         _getHourActiveStyle(time, classprefix) {
             if (this.lastHour)
@@ -176,6 +194,7 @@
          * Called on every hass update
          */
         set hass(hass) {
+            var _a, _b, _c, _d;
             if (!this.entity || !hass.states[this.entity]) {
                 return;
             }
@@ -184,7 +203,15 @@
             this._hass = hass;
             // Initialize?
             if (this.timetablestring != this.entityObj.attributes.timetable) {
-                this.timetable = JSON.parse(this.entityObj.attributes.timetable);
+                try {
+                    this.timetable = JSON.parse(this.entityObj.attributes.timetable);
+                    this.visibleTimetable = (_b = (_a = this.timetable) === null || _a === void 0 ? void 0 : _a.data.timetable.slice(this.startIndex, 5)) !== null && _b !== void 0 ? _b : [];
+                    this.dayCount = (_d = (_c = this.timetable) === null || _c === void 0 ? void 0 : _c.data.timetable.length) !== null && _d !== void 0 ? _d : 0;
+                }
+                catch (e) {
+                    console.log("Error Parsing timetable: " + e);
+                    console.log(this.entityObj.attributes.timetable);
+                }
                 //this._init();
             }
         }
@@ -198,6 +225,7 @@
                 this.cardTitle = config.title;
             if (config.lastHour)
                 this.lastHour = config.lastHour;
+            this.startIndex = 0;
         }
     }
     __decorate([
@@ -212,6 +240,9 @@
     __decorate([
         e({ attribute: false })
     ], HAWebUntisCard.prototype, "lastHour", void 0);
+    __decorate([
+        e({ attribute: false })
+    ], HAWebUntisCard.prototype, "visibleTimetable", void 0);
     __decorate([
         e()
     ], HAWebUntisCard.prototype, "_config", void 0);

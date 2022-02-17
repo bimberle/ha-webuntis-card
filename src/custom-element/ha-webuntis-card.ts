@@ -1,5 +1,5 @@
 import { HomeAssistant } from "../ha-types";
-import { html, css, LitElement, CSSResultGroup, TemplateResult, PropertyValues } from "lit";
+import { html, css, LitElement, CSSResultGroup, TemplateResult } from "lit";
 import { property } from "lit/decorators";
 import { ICardConfig, Lesson, StartTime, Day, TimetableResult } from "../types";
 import styles from "./card.css";
@@ -22,6 +22,9 @@ export class HAWebUntisCard extends LitElement {
     @property({ attribute: false })
     private lastHour?: number
 
+    @property({ attribute: false })
+    private visibleTimetable?: Day[];
+
     private entity: string = "";
 
     @property() private _config?: ICardConfig;
@@ -29,6 +32,10 @@ export class HAWebUntisCard extends LitElement {
     private entityObj: any = undefined;
     private _hass: any;
     private timetablestring: string = "";
+
+
+    private startIndex: number = 0;
+    private dayCount: number = 0;
     
 
 
@@ -39,13 +46,21 @@ export class HAWebUntisCard extends LitElement {
      */
     render(): TemplateResult 
     {
-        if(this.timetable) {
+        if(this.timetable != undefined) {
         return html`
             <ha-card>
                 ${this.cardTitle ? html`
                 <div class="card-header">
                     <div class="truncate">
-                        ${this.cardTitle}
+                        <div class="cardTitle">
+                            ${this.cardTitle}
+                        </div>
+                        <div class="last" @click=${() => this._showLastWeek(this.startIndex)}>
+                            ${(this.startIndex-5) > 0 ? html`<ha-icon icon='mdi:chevron-left'></ha-icon>`: html``}
+                        </div>
+                        <div class="next" @click=${() => this._showNextWeek(this.startIndex)}>
+                            ${(this.startIndex+5) <= this.dayCount ? html`<ha-icon icon='mdi:chevron-right'></ha-icon>`: html``}
+                        </div>
                     </div>
                 </div>` : html ``}
                 <div class="card-content">
@@ -54,49 +69,50 @@ export class HAWebUntisCard extends LitElement {
                                 <div class='hourheader'>&nbsp;</div>
                                 <div class='daydate'>&nbsp;</div>
                                 <div class='hours'>
-                                    ${this.timetable.data.startTimetimes.map( (time: StartTime) => {
-                                        if(this.lastHour == undefined || this.lastHour >= Number(time.key.substring(0,2)))
-                                        {
-                                            return html`
-                                            <div class='lesson'>
-                                                <div class=${this._getHourActiveStyle(time.key, 'hourheader') }>
-                                                    ${time.key}
-                                                </div>
-                                                <div class=${this._getHourActiveStyle(time.key, 'hourend') }>
-                                                    ${time.value}
-                                                </div>
-                                            </div>`;
-                                        }
+                                    ${this.timetable.data.startTimetimes.map( (time: StartTime, index: number) => {
+                                            if(this.lastHour == undefined || this.lastHour >= Number(time.key.substring(0,2)))
+                                            {
+                                                return html`
+                                                <div class='lesson'>
+                                                    <div class=${this._getHourActiveStyle(time.key, 'hourheader') }>
+                                                        ${time.key}
+                                                    </div>
+                                                    <div class=${this._getHourActiveStyle(time.key, 'hourend') }>
+                                                        ${time.value}
+                                                    </div>
+                                                </div>`;
+                                            }
+                                        
                                     })}
                                 </div>
                             </div>
-                        ${this.timetable.data.timetable.map((day: Day) => {
-                            return html `
-                            <div class='day'>
-                                <div class='dayheader'>
-                                    ${day.value[0].tagname}
-                                </div>
-                                <div class='daydate'>
-                                    ${day.value[0].date}
-                                </div>
-                                <div class='lessons'>
-                                ${day.value.map((lesson: Lesson) => {
-                                    if(this.lastHour == undefined || this.lastHour >= Number(lesson.startTime.substring(0,2)))
-                                    {
-                                        return html`
-                                        <div class='lesson'>
-                                            <div class=${this._getHourActiveStyle(lesson.startTime, 'lessonheader') }>
-                                                    ${lesson.fach != '' ? lesson.fach.substring(0,6) : '-'}
-                                            </div>
-                                            <div class=${this._getHourActiveStyle(lesson.startTime, 'teacher') }>
-                                                ${lesson.lehrer != '' ? lesson.lehrer.substring(0,12) : '-'}
-                                            </div>
-                                        </div>`;
-                                    }
-                                    
-                                })}
-                                </div>
-                            </div>`;
+                        ${this.visibleTimetable?.map((day: Day, index: number) => {
+                                return html `
+                                <div class='day'>
+                                    <div class='dayheader'>
+                                        ${day.value[0].tagname}
+                                    </div>
+                                    <div class='daydate'>
+                                        ${day.value[0].date}
+                                    </div>
+                                    <div class='lessons'>
+                                    ${day.value.map((lesson: Lesson) => {
+                                        if(this.lastHour == undefined || this.lastHour >= Number(lesson.startTime.substring(0,2)))
+                                        {
+                                            return html`
+                                            <div class='lesson'>
+                                                <div class=${this._getHourActiveStyle(lesson.startTime, 'lessonheader') }>
+                                                        ${lesson.fach != '' ? lesson.fach.substring(0,6) : '-'}
+                                                </div>
+                                                <div class=${this._getHourActiveStyle(lesson.startTime, 'teacher') }>
+                                                    ${lesson.lehrer != '' ? lesson.lehrer.substring(0,12) : '-'}
+                                                </div>
+                                            </div>`;
+                                        }
+                                        
+                                    })}
+                                    </div>
+                                </div>`;
                             //this.renderDay(day);
                         })}
                     </div>
@@ -118,11 +134,16 @@ export class HAWebUntisCard extends LitElement {
     })}
     */
 
-    private _getSonderText(lesson: Lesson) : TemplateResult {
-        if(lesson.sondertext != '')
-            return html`<div class='sondertext'>${lesson.sondertext}</div>`;
-        else
-            return html``;
+    private _showNextWeek(currentIndex: number) {
+        this.startIndex = currentIndex + 5;
+        var ende = (this.startIndex + 5)  > this.dayCount ? this.dayCount - 1 : this.startIndex + 5;
+        this.visibleTimetable = this.timetable?.data.timetable.slice(this.startIndex, ende) ?? [];
+    }
+    private _showLastWeek(currentIndex: number) {
+        this.startIndex = currentIndex - 5;
+        if(this.startIndex < 0)
+            this.startIndex = 0;
+        this.visibleTimetable = this.timetable?.data.timetable.slice(this.startIndex, this.startIndex+5) ?? []
     }
 
     
@@ -158,7 +179,17 @@ export class HAWebUntisCard extends LitElement {
 
         // Initialize?
         if(this.timetablestring != this.entityObj.attributes.timetable) {
-            this.timetable = JSON.parse(this.entityObj.attributes.timetable);
+            try {
+                this.timetable = JSON.parse(this.entityObj.attributes.timetable);
+                this.visibleTimetable = this.timetable?.data.timetable.slice(this.startIndex,5) ?? [];
+                this.dayCount = this.timetable?.data.timetable.length ?? 0;
+            }
+            catch(e)
+            {
+                console.log("Error Parsing timetable: " + e);
+                console.log(this.entityObj.attributes.timetable)
+            }
+            
             //this._init();
         }
             
@@ -176,6 +207,7 @@ export class HAWebUntisCard extends LitElement {
             this.cardTitle = config.title;
         if(config.lastHour)
             this.lastHour = config.lastHour
+        this.startIndex = 0;
     }
 
 
