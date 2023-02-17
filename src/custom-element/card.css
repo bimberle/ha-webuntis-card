@@ -1,5 +1,8 @@
 .webuntiscard {
     max-width: 390px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .truncate {

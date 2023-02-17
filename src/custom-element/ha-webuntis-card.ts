@@ -160,11 +160,11 @@ export class HAWebUntisCard extends LitElement {
                 if(this.actualDate != this.getCurrentDateString())
                     {
                         // Prüfen ob das aktuelle Datum > der letzte angezeigt Tag ist
-                        if(!this.isComingDateVisible()) {
-                            shoulddo = false;
-                            this._showNextWeek();
-                        }
-                        else
+                        //if(!this.isComingDateVisible()) {
+                        //    shoulddo = false;
+                        //    this._showNextWeek();
+                        //}
+                        //else
                             this.actualDate = this.getCurrentDateString();
                     }
                     
@@ -211,6 +211,15 @@ export class HAWebUntisCard extends LitElement {
             return html``;
     }
 
+    private _parseDate(input: string) {
+        var parts = input.match(/(\d+)/g);
+        // note parts[1]-1
+        if(parts != undefined)
+            return new Date(parseInt(parts[2]), parseInt(parts[1])-1, parseInt(parts[0]));
+        else
+            return new Date();
+    }
+
     private _showNextWeek() {
         this.startIndex += + 5;
         var ende = (this.startIndex + 5)  > this.dayCount ? this.dayCount : this.startIndex + 5;
@@ -227,7 +236,7 @@ export class HAWebUntisCard extends LitElement {
 
     setLastVisibleDate() {
         var lastDateString : string = this.visibleTimetable ? this.visibleTimetable[this.visibleTimetable.length-1].value[0].date : "";
-        this.lastVisibleDate = new Date(parseInt(lastDateString.substring(6)), parseInt(lastDateString.substring(3,5)), parseInt(lastDateString.substring(0,2)));
+        this.lastVisibleDate = this._parseDate(lastDateString);
     }
 
     getCurrentDateString() {
@@ -243,11 +252,11 @@ export class HAWebUntisCard extends LitElement {
         let timeInMilisec: number = this.lastVisibleDate.getTime() - today.getTime();
         let daysBetweenDates: number = Math.ceil(timeInMilisec / (1000 * 60 * 60 * 24));
         
-        if(daysBetweenDates > 0) {
-            return false;
+        if(daysBetweenDates >= 0) {
+            return true;
         }
         else
-            return true;
+            return false;
     }
 
     
@@ -287,16 +296,23 @@ export class HAWebUntisCard extends LitElement {
         if(this.timetablestring != this.entityObj.attributes.timetable) {
             try {
                 this.timetable = JSON.parse(this.entityObj.attributes.timetable);
-                this.visibleTimetable = this.timetable?.data.timetable.slice(this.startIndex,5) ?? [];
-                this.dayCount = this.timetable?.data.timetable.length ?? 0;
-                if(!this.isComingDateVisible())
-                    this._showNextWeek();
-                this.setLastVisibleDate();
+                if(this.timetable != undefined) {
+                    if(this.timetable.data != undefined) {
+                        this.visibleTimetable = this.timetable.data.timetable.slice(this.startIndex,5) ?? [];
+                        this.dayCount = this.timetable.data.timetable.length ?? 0;
+                        //if(!this.isComingDateVisible())
+                        //    this._showNextWeek();
+                        this.setLastVisibleDate();
+                    }
+                    
+                }
+                
             }
             catch(e)
             {
                 console.log("Error Parsing timetable: " + e);
-                console.log(this.entityObj.attributes.timetable)
+                console.log("StartIndex:" + this.startIndex)
+                //console.log(this.entityObj.attributes.timetable)
             }
             
             //this._init();
