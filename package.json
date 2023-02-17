@@ -1,7 +1,7 @@
 {
-  "name": "lovelace-card-boilerplate",
-  "version": "0.1.0",
-  "description": "Lovelace card boilerplate",
+  "name": "ha-webuntis-card",
+  "version": "1.2.1",
+  "description": "Lovelace Webuntis Card",
   "main": "dist/ha-webuntis-card.js",
   "scripts": {
     "build": "rollup -c",
@@ -17,7 +17,7 @@
   "keywords": [
     "lovelace",
     "card",
-    "boilerplate",
+    "webuntis",
     "home",
     "assistant"
   ],

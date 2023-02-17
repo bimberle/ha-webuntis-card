@@ -9,6 +9,8 @@ export interface ICardConfig {
 export interface TimetableResult {
     version: string;
     data: TimetableData;
+    notifications: number;
+    timetableurl: string;
 }
 
 export interface TimetableData {

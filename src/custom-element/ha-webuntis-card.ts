@@ -1,8 +1,9 @@
 import { HomeAssistant } from "../ha-types";
-import { html, css, LitElement, CSSResultGroup, TemplateResult } from "lit";
+import { html, css, LitElement, CSSResultGroup, TemplateResult, PropertyValues } from "lit";
 import { property } from "lit/decorators";
 import { ICardConfig, Lesson, StartTime, Day, TimetableResult } from "../types";
 import styles from "./card.css";
+import { hasConfigOrEntityChanged } from "../has-changed";
 //import { hasConfigOrEntityChanged } from "../has-changed";
 
 /**
@@ -36,6 +37,10 @@ export class HAWebUntisCard extends LitElement {
 
     private startIndex: number = 0;
     private dayCount: number = 0;
+    private initialized: boolean = false;
+    @property({ attribute: false })
+    private actualDate: string = "";
+    private lastVisibleDate: Date = new Date();
     
 
 
@@ -47,19 +52,22 @@ export class HAWebUntisCard extends LitElement {
     render(): TemplateResult 
     {
         if(this.timetable != undefined) {
+            if(!this.initialized)
+                this.initialized = true;
         return html`
-            <ha-card>
+            <ha-card class="webuntiscard">
                 ${this.cardTitle ? html`
                 <div class="card-header">
                     <div class="truncate">
                         <div class="cardTitle">
                             ${this.cardTitle}
                         </div>
-                        <div class="last" @click=${() => this._showLastWeek(this.startIndex)}>
-                            ${(this.startIndex-5) > 0 ? html`<ha-icon icon='mdi:chevron-left'></ha-icon>`: html``}
+                        ${this.renderNotification()}
+                        <div class="last" @click=${() => this._showLastWeek()}>
+                            ${(this.startIndex-5) >= 0 ? html`<ha-icon icon='mdi:chevron-left'></ha-icon>`: html``}
                         </div>
-                        <div class="next" @click=${() => this._showNextWeek(this.startIndex)}>
-                            ${(this.startIndex+5) <= this.dayCount ? html`<ha-icon icon='mdi:chevron-right'></ha-icon>`: html``}
+                        <div class="next" @click=${() => this._showNextWeek()}>
+                            ${(this.startIndex+5) < this.dayCount ? html`<ha-icon icon='mdi:chevron-right'></ha-icon>`: html``}
                         </div>
                     </div>
                 </div>` : html ``}
@@ -88,12 +96,12 @@ export class HAWebUntisCard extends LitElement {
                             </div>
                         ${this.visibleTimetable?.map((day: Day, index: number) => {
                                 return html `
-                                <div class='day'>
+                                <div class=${this.actualDate == day.value[0].date.substring(0,6) ? `currentDay` : `day`}>
                                     <div class='dayheader'>
                                         ${day.value[0].tagname}
                                     </div>
                                     <div class='daydate'>
-                                        ${day.value[0].date}
+                                        ${day.value[0].date.substring(0,6)}
                                     </div>
                                     <div class='lessons'>
                                     ${day.value.map((lesson: Lesson) => {
@@ -128,22 +136,118 @@ export class HAWebUntisCard extends LitElement {
     
     }
 
-    /*
-    ${day.value.map((lesson: Lesson) => {
-        this.renderLesson(lesson);
-    })}
-    */
 
-    private _showNextWeek(currentIndex: number) {
-        this.startIndex = currentIndex + 5;
-        var ende = (this.startIndex + 5)  > this.dayCount ? this.dayCount - 1 : this.startIndex + 5;
-        this.visibleTimetable = this.timetable?.data.timetable.slice(this.startIndex, ende) ?? [];
+    protected shouldUpdate(changedProps: PropertyValues): boolean {
+        if(this.initialized) 
+        {
+            var shoulddo = false;
+            if (changedProps.has("timetable")) {
+                // Prüfen ob es eine Änderung beim Stundenplan gab
+                if(this.entityObj.attributes.timetable != this._hass.states[this.entity].attributes.timetable) 
+                    shoulddo = true;
+                else
+                    shoulddo = false;
+                }
+            else {
+                // timetable hat sich nicht geändert
+                if(changedProps.has("visibleTimetable"))
+                    shoulddo = true;
+
+                // hat sich der Tag geändert?
+                if(changedProps.has("actualDate"))
+                    shoulddo = true;
+                }
+                if(this.actualDate != this.getCurrentDateString())
+                    {
+                        // Prüfen ob das aktuelle Datum > der letzte angezeigt Tag ist
+                        if(!this.isComingDateVisible()) {
+                            shoulddo = false;
+                            this._showNextWeek();
+                        }
+                        else
+                            this.actualDate = this.getCurrentDateString();
+                    }
+                    
+                    
+                
+                return shoulddo;
+            }
+        else
+            {
+                return true;
+            }
+        }
+    protected updated(changedProps: PropertyValues) {
+            super.updated(changedProps);
+        
+            if (changedProps.has("hass")) {
+                const stateObj = this.hass!.states[this._config!.entity];
+                const oldHass = changedProps.get("hass") as this["hass"];
+                const oldStateObj = oldHass
+                ? oldHass.states[this._config!.entity]
+                : undefined;
+        
+            }
+        }
+
+    private renderNotification() : TemplateResult {
+
+        if(this.timetable?.notifications && this.timetable.notifications > 0)
+        {
+            var urlSet = false;
+            if(this.timetable?.timetableurl && this.timetable.timetableurl != '')
+                urlSet = true;
+            
+            return html`
+            ${urlSet ? html`<a target='_blank' href=${this.timetable.timetableurl}'>` : ``}
+            <div class="notificationbadge">
+                <ha-icon icon='mdi:bell'></ha-icon>
+                <div class='badge'>${this.timetable.notifications}</div>
+            </div>
+            ${urlSet ? html`</a>` : ``}
+            `;
+        }
+        else 
+            return html``;
     }
-    private _showLastWeek(currentIndex: number) {
-        this.startIndex = currentIndex - 5;
+
+    private _showNextWeek() {
+        this.startIndex += + 5;
+        var ende = (this.startIndex + 5)  > this.dayCount ? this.dayCount : this.startIndex + 5;
+        this.visibleTimetable = this.timetable?.data.timetable.slice(this.startIndex, ende) ?? [];
+        this.setLastVisibleDate();
+    }
+    private _showLastWeek() {
+        this.startIndex -= 5;
         if(this.startIndex < 0)
             this.startIndex = 0;
         this.visibleTimetable = this.timetable?.data.timetable.slice(this.startIndex, this.startIndex+5) ?? []
+        this.setLastVisibleDate();
+    }
+
+    setLastVisibleDate() {
+        var lastDateString : string = this.visibleTimetable ? this.visibleTimetable[this.visibleTimetable.length-1].value[0].date : "";
+        this.lastVisibleDate = new Date(parseInt(lastDateString.substring(6)), parseInt(lastDateString.substring(3,5)), parseInt(lastDateString.substring(0,2)));
+    }
+
+    getCurrentDateString() {
+        var now = new Date();
+        this.actualDate = "";
+        this.actualDate += now.getUTCDate() < 10 ? "0" + now.getUTCDate().toString() :  now.getUTCDate().toString();
+        this.actualDate += now.getUTCMonth() < 10 ? ".0" + now.getUTCMonth().toString() : "." + now.getUTCMonth().toString();
+        return this.actualDate += "."; 
+    }
+
+    isComingDateVisible() : boolean {
+        var today: Date = new Date();
+        let timeInMilisec: number = this.lastVisibleDate.getTime() - today.getTime();
+        let daysBetweenDates: number = Math.ceil(timeInMilisec / (1000 * 60 * 60 * 24));
+        
+        if(daysBetweenDates > 0) {
+            return false;
+        }
+        else
+            return true;
     }
 
     
@@ -175,6 +279,8 @@ export class HAWebUntisCard extends LitElement {
         this.state = hass.states[this.entity].state;
         this.entityObj = hass.states[this.entity];
         this._hass = hass;
+
+        this.actualDate = this.getCurrentDateString();
         
 
         // Initialize?
@@ -183,6 +289,9 @@ export class HAWebUntisCard extends LitElement {
                 this.timetable = JSON.parse(this.entityObj.attributes.timetable);
                 this.visibleTimetable = this.timetable?.data.timetable.slice(this.startIndex,5) ?? [];
                 this.dayCount = this.timetable?.data.timetable.length ?? 0;
+                if(!this.isComingDateVisible())
+                    this._showNextWeek();
+                this.setLastVisibleDate();
             }
             catch(e)
             {
@@ -209,6 +318,8 @@ export class HAWebUntisCard extends LitElement {
             this.lastHour = config.lastHour
         this.startIndex = 0;
     }
+
+ 
 
 
 }
