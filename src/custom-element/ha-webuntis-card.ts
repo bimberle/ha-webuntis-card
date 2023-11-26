@@ -114,12 +114,12 @@ export class HAWebUntisCard extends LitElement {
                             </div>
                         ${this.visibleTimetable?.map((day: Day, index: number) => {
                                 return html `
-                                <div class=${this.actualDate == day.value[0].date.substring(0,6) ? `currentDay` : `day`}>
+                                <div class=${this.actualDate == day.value[0].date.toString().substring(0,6) ? `currentDay` : `day`}>
                                     <div class='dayheader'>
                                         ${day.value[0].tagname}
                                     </div>
                                     <div class='daydate'>
-                                        ${day.value[0].date.substring(0,6)}
+                                        ${day.value[0].date.toString().substring(0,6)}
                                     </div>
                                     <div class='lessons'>
                                     ${day.value.map((lesson: Lesson) => {
