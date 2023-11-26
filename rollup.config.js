@@ -18,8 +18,8 @@ const plugins = [
   }),
   copy({
     targets: [
-      { src: 'dist/*', dest: '/Volumes/dockerfiles/configs/hass-config/www/custom_ui' },
-      { src: 'src/custom-element/ha-webuntis-card.ts', dest: '/Volumes/dockerfiles/configs/hass-config/www/src/custom-element/' }
+      { src: 'dist/*', dest: '/Users/michaelkech/Library/Containers/net.langui.FTPMounter/Data/.FTPVolumes/HAconfig/www/custom_cards/ha-webuntis-card' },
+      { src: 'src/custom-element/ha-webuntis-card.ts', dest: '/Users/michaelkech/Library/Containers/net.langui.FTPMounter/Data/.FTPVolumes/HAconfig/www/src/custom-element/' }
       
     ]
   })

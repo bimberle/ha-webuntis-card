@@ -1,9 +1,9 @@
 import { HomeAssistant } from "../ha-types";
 import { html, css, LitElement, CSSResultGroup, TemplateResult, PropertyValues } from "lit";
 import { property } from "lit/decorators";
-import { ICardConfig, Lesson, StartTime, Day, TimetableResult } from "../types";
+import { ICardConfig, Lesson, StartTime, Day, TimetableResult, Klausur } from "../types";
 import styles from "./card.css";
-import { hasConfigOrEntityChanged } from "../has-changed";
+//import { hasConfigOrEntityChanged } from "../has-changed";
 //import { hasConfigOrEntityChanged } from "../has-changed";
 
 /**
@@ -15,7 +15,25 @@ export class HAWebUntisCard extends LitElement {
     private cardTitle?: string
 
     @property({ attribute: false })
-    private state: string = "";
+    private debug?: boolean
+
+    @property({ attribute: false })
+    private api_url?: string
+
+    @property({ attribute: false })
+    private webuntis_url?: string
+
+    @property({ attribute: false })
+    private webuntis_school?: string
+
+    @property({ attribute: false })
+    private webuntis_user?: string
+
+    @property({ attribute: false })
+    private webuntis_key?: string
+
+    @property({ attribute: false })
+    private webuntis_schoolnumber?: string
 
     @property({ attribute: false})
     private timetable?: TimetableResult;
@@ -26,14 +44,14 @@ export class HAWebUntisCard extends LitElement {
     @property({ attribute: false })
     private visibleTimetable?: Day[];
 
-    private entity: string = "";
+    //private entity: string = "";
 
     @property() private _config?: ICardConfig;
 
-    private entityObj: any = undefined;
+    //private entityObj: any = undefined;
     private _hass: any;
-    private timetablestring: string = "";
-
+    //private timetablestring: string = "";
+    private klausuren: Klausur[] = [];
 
     private startIndex: number = 0;
     private dayCount: number = 0;
@@ -125,6 +143,14 @@ export class HAWebUntisCard extends LitElement {
                         })}
                     </div>
                 </div>
+                <div>Klausuren</div>
+                <div>
+                    ${this.klausuren.map((klausur: Klausur, index: number) => {
+                        return html`
+                            <div>${klausur.datum}</div><div>${klausur.uhrzeit}</div><div>${klausur.fach}</div>
+                            `; 
+                    }) }
+                </div>
             </ha-card>
             `;
         }
@@ -141,14 +167,7 @@ export class HAWebUntisCard extends LitElement {
         if(this.initialized) 
         {
             var shoulddo = false;
-            if (changedProps.has("timetable")) {
-                // Prüfen ob es eine Änderung beim Stundenplan gab
-                if(this.entityObj.attributes.timetable != this._hass.states[this.entity].attributes.timetable) 
-                    shoulddo = true;
-                else
-                    shoulddo = false;
-                }
-            else {
+            
                 // timetable hat sich nicht geändert
                 if(changedProps.has("visibleTimetable"))
                     shoulddo = true;
@@ -156,7 +175,7 @@ export class HAWebUntisCard extends LitElement {
                 // hat sich der Tag geändert?
                 if(changedProps.has("actualDate"))
                     shoulddo = true;
-                }
+                
                 if(this.actualDate != this.getCurrentDateString())
                     {
                         // Prüfen ob das aktuelle Datum > der letzte angezeigt Tag ist
@@ -170,22 +189,19 @@ export class HAWebUntisCard extends LitElement {
                     
                     
                 
-                return shoulddo;
-            }
-        else
-            {
-                return true;
-            }
+            return shoulddo;
         }
+        else
+            return true;
+    }
+
     protected updated(changedProps: PropertyValues) {
             super.updated(changedProps);
         
             if (changedProps.has("hass")) {
-                const stateObj = this.hass!.states[this._config!.entity];
+                //const stateObj = this.hass!.states[this._config!.entity];
                 const oldHass = changedProps.get("hass") as this["hass"];
-                const oldStateObj = oldHass
-                ? oldHass.states[this._config!.entity]
-                : undefined;
+                //const oldStateObj = oldHass ? oldHass.states[this._config!.entity] : undefined;
         
             }
         }
@@ -281,42 +297,31 @@ export class HAWebUntisCard extends LitElement {
      * Called on every hass update
      */
     set hass(hass: HomeAssistant) {
-        if (!this.entity || !hass.states[this.entity]) {
-            return;
-        }
+        //if (!this.entity || !hass.states[this.entity]) {
+        //    return;
+        //}
 
-        this.state = hass.states[this.entity].state;
-        this.entityObj = hass.states[this.entity];
+        //this.state = hass.states[this.entity].state;
+        //this.entityObj = hass.states[this.entity];
         this._hass = hass;
 
         this.actualDate = this.getCurrentDateString();
         
-
-        // Initialize?
-        if(this.timetablestring != this.entityObj.attributes.timetable) {
-            try {
-                this.timetable = JSON.parse(this.entityObj.attributes.timetable);
-                if(this.timetable != undefined) {
-                    if(this.timetable.data != undefined) {
-                        this.visibleTimetable = this.timetable.data.timetable.slice(this.startIndex,5) ?? [];
-                        this.dayCount = this.timetable.data.timetable.length ?? 0;
-                        //if(!this.isComingDateVisible())
-                        //    this._showNextWeek();
-                        this.setLastVisibleDate();
-                    }
-                    
+        this.getTimetableFromUrl().then(timetable => {
+            if(timetable != undefined) {
+                this.timetable = timetable;
+                if(this.timetable.data != undefined) {
+                    this.visibleTimetable = this.timetable.data.timetable.slice(this.startIndex,5) ?? [];
+                    this.dayCount = this.timetable.data.timetable.length ?? 0;
+                    //if(!this.isComingDateVisible())
+                    //    this._showNextWeek();
+                    this.setLastVisibleDate();
                 }
-                
+                if(this.timetable.data.klausuren != undefined) {
+                    this.klausuren = this.timetable.data.klausuren;
+                }
             }
-            catch(e)
-            {
-                console.log("Error Parsing timetable: " + e);
-                console.log("StartIndex:" + this.startIndex)
-                //console.log(this.entityObj.attributes.timetable)
-            }
-            
-            //this._init();
-        }
+        });
             
     }
 
@@ -326,16 +331,57 @@ export class HAWebUntisCard extends LitElement {
      * Called every time when entity config is updated
      * @param config Card configuration (yaml converted to JSON)
      */
-    setConfig(config: ICardConfig): void {
-        this.entity = config.entity;
+    setConfig(config: ICardConfig): any {
+        //this.entity = config.entity;
         if(config.title)
             this.cardTitle = config.title;
         if(config.lastHour)
             this.lastHour = config.lastHour
+        if(config.api_url)
+            this.api_url = config.api_url
+        if(config.webuntis_url)
+            this.webuntis_url = config.webuntis_url
+        if(config.webuntis_user)
+            this.webuntis_user = config.webuntis_user
+        if(config.webuntis_key)
+            this.webuntis_key =config.webuntis_key
+        if(config.webuntis_schoolnumber)
+            this.webuntis_schoolnumber = config.webuntis_schoolnumber
+        if(config.webuntis_school)
+            this.webuntis_school = config.webuntis_school
+        if(config.debug)
+            this.debug = config.debug;
+        else
+            this.debug = false;
+
+
         this.startIndex = 0;
     }
 
- 
+    // http://192.168.178.116:8234/webuntis/x/x/nessa.webuntis.com/RobertG%20Gym/KEC/E75HFIUCPA5HTVRV/4229900/false
+    
+    getTimetableFromUrl() : Promise<TimetableResult> {
+        let parsedResponse: TimetableResult;
+        let url = this.api_url + "/x/x/" + this.webuntis_url + "/" + this.webuntis_school + "/" + this.webuntis_user + "/" + this.webuntis_key + "/" + this.webuntis_schoolnumber;
+        if(this.debug)
+            url = url + "/true";
+        else
+            url = url + "/false";
+        
+        return fetch(url)
+		.then((response) => response.json()) // Parse the response in JSON:
+		.then((response) => {
+            try {
+                parsedResponse = JSON.parse(response);
+            }
+            catch(ex) {
+                console.error("Failed to parse Result:" + ex);
+                console.error(response );
+            }
+			return parsedResponse as TimetableResult;
+		});
+
+    }
 
 
 }
