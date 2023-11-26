@@ -43,7 +43,7 @@ if (process.env.release) {
   repoRoot += "/";
 
   //sourcemapPathTransform = file => repoRoot + "v" + pkg.version + file.substr(2);
-  sourcemapPathTransform = file => repoRoot + "v" + pkg.version + file.substr(2);
+  sourcemapPathTransform = file => repoRoot + "main" + file.substr(2);
 
 }
 

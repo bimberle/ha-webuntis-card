@@ -26,7 +26,7 @@ export interface TimetableData {
 }
 
 export interface StartTime {
-    key: string;
+    key: number;
     value: string;
 }
 
@@ -48,7 +48,7 @@ export interface Lesson {
     fachLang: string;
     lehrer: string;
     raum: string;
-    startTime: string;
+    startTime: number;
     date: string;
     tagDate: Number;
     tagname: string;

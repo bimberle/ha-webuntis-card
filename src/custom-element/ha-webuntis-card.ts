@@ -96,7 +96,7 @@ export class HAWebUntisCard extends LitElement {
                                 <div class='daydate'>&nbsp;</div>
                                 <div class='hours'>
                                     ${this.timetable.data.startTimetimes.map( (time: StartTime, index: number) => {
-                                            if(this.lastHour == undefined || this.lastHour >= Number(time.key.substring(0,2)))
+                                            if(this.lastHour == undefined || this.lastHour >= time.key/100)
                                             {
                                                 return html`
                                                 <div class='lesson'>
@@ -123,7 +123,7 @@ export class HAWebUntisCard extends LitElement {
                                     </div>
                                     <div class='lessons'>
                                     ${day.value.map((lesson: Lesson) => {
-                                        if(this.lastHour == undefined || this.lastHour >= Number(lesson.startTime.substring(0,2)))
+                                        if(this.lastHour == undefined || this.lastHour >= lesson.startTime/100)
                                         {
                                             return html`
                                             <div class='lesson'>
@@ -276,9 +276,9 @@ export class HAWebUntisCard extends LitElement {
     }
 
     
-    private _getHourActiveStyle(time: string, classprefix: string) : string {
+    private _getHourActiveStyle(time: number, classprefix: string) : string {
         if(this.lastHour)
-            if(Number(time.substring(0,2)) > this.lastHour)
+            if(time/100 > this.lastHour)
                 return classprefix + 'inactive'
             else
                 return classprefix
@@ -309,6 +309,8 @@ export class HAWebUntisCard extends LitElement {
         
         this.getTimetableFromUrl().then(timetable => {
             if(timetable != undefined) {
+                if(this.debug)
+                    console.debug(timetable);
                 this.timetable = timetable;
                 if(this.timetable.data != undefined) {
                     this.visibleTimetable = this.timetable.data.timetable.slice(this.startIndex,5) ?? [];
@@ -371,14 +373,9 @@ export class HAWebUntisCard extends LitElement {
         return fetch(url)
 		.then((response) => response.json()) // Parse the response in JSON:
 		.then((response) => {
-            try {
-                parsedResponse = JSON.parse(response);
-            }
-            catch(ex) {
-                console.error("Failed to parse Result:" + ex);
-                console.error(response );
-            }
-			return parsedResponse as TimetableResult;
+            if(this.debug)
+                console.debug(response);
+			return response as TimetableResult;
 		});
 
     }
