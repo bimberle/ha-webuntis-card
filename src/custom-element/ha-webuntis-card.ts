@@ -292,9 +292,9 @@ export class HAWebUntisCard extends LitElement {
     private _getHourString(time: number) {
         let timeString = time.toString();
         if(timeString.length > 3)
-            return timeString.substring(0,2) + ":" + timeString.substring(2,2);
+            return timeString.substring(0,2) + ":" + timeString.substring(2,4);
         else
-            return "0" + timeString.substring(0,1) + ":" + timeString.substring(1,2);
+            return "0" + timeString.substring(0,1) + ":" + timeString.substring(1,3);
     }
     
     private _getHourActiveStyle(time: number, classprefix: string) : string {
