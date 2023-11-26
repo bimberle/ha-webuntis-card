@@ -3,7 +3,6 @@ import { html, css, LitElement, CSSResultGroup, TemplateResult, PropertyValues }
 import { property } from "lit/decorators";
 import { ICardConfig, Lesson, StartTime, Day, TimetableResult, Klausur } from "../types";
 import styles from "./card.css";
-import * as moment from 'moment'
 //import { hasConfigOrEntityChanged } from "../has-changed";
 //import { hasConfigOrEntityChanged } from "../has-changed";
 
@@ -229,10 +228,16 @@ export class HAWebUntisCard extends LitElement {
     }
 
     private _parseDate(input: any) : Date {
-        if(input != undefined)
-            return moment(input, 'YYYYMMDD').toDate();
+        if(input != undefined) {
+            if(Number.isInteger(input)) {
+                let dateString = input.toString();
+                return new Date(dateString.substring(0,4) + "-" + dateString.substring(4,2) + dateString.substring(6,2));
+            }
+            else
+                return new Date(input);
+        }
         else
-            return moment().toDate();
+            return new Date();
     }
 
     private _showNextWeek() {
