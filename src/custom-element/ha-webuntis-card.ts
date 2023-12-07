@@ -59,7 +59,6 @@ export class HAWebUntisCard extends LitElement {
     @property({ attribute: false })
     private actualDate: string = "";
     private lastVisibleDate: Date = new Date();
-    private daynames: string[] = ["SO", "MO", "DI", "MI", "DO", "FR", "SA"];
     
 
 
@@ -97,15 +96,15 @@ export class HAWebUntisCard extends LitElement {
                                 <div class='daydate'>&nbsp;</div>
                                 <div class='hours'>
                                     ${this.timetable.data.startTimetimes.map( (time: StartTime, index: number) => {
-                                            if(this.lastHour == undefined || this.lastHour >= time.key/100)
+                                            if(this.lastHour == undefined || this.lastHour >= Number(time.key.substring(0,2)))
                                             {
                                                 return html`
                                                 <div class='lesson'>
                                                     <div class=${this._getHourActiveStyle(time.key, 'hourheader') }>
-                                                        ${this._getHourString(time.key)}
+                                                        ${time.key}
                                                     </div>
                                                     <div class=${this._getHourActiveStyle(time.key, 'hourend') }>
-                                                        ${time.key }
+                                                        ${time.value}
                                                     </div>
                                                 </div>`;
                                             }
@@ -115,16 +114,16 @@ export class HAWebUntisCard extends LitElement {
                             </div>
                         ${this.visibleTimetable?.map((day: Day, index: number) => {
                                 return html `
-                                <div class=${this.actualDate == day.value[0].date.toString().substring(0,6) ? `currentDay` : `day`}>
+                                <div class=${this.actualDate == day.value[0].date.substring(0,6) ? `currentDay` : `day`}>
                                     <div class='dayheader'>
-                                        ${this._getDayName(day.value[0].date)}
+                                        ${day.value[0].tagname}
                                     </div>
                                     <div class='daydate'>
-                                        ${this._getShortDate(day.value[0].date)}
+                                        ${day.value[0].date.substring(0,6)}
                                     </div>
                                     <div class='lessons'>
                                     ${day.value.map((lesson: Lesson) => {
-                                        if(this.lastHour == undefined || this.lastHour >= lesson.startTime/100)
+                                        if(this.lastHour == undefined || this.lastHour >= Number(lesson.startTime.substring(0,2)))
                                         {
                                             return html`
                                             <div class='lesson'>
@@ -228,26 +227,13 @@ export class HAWebUntisCard extends LitElement {
             return html``;
     }
 
-    private _parseDate(input: any) : Date {
-        if(input != undefined) {
-            if(Number.isInteger(input)) {
-                let dateString = input.toString();
-                return new Date(dateString.substring(0,4) + "-" + dateString.substring(4,2) + dateString.substring(6,2));
-            }
-            else
-                return new Date(input);
-        }
+    private _parseDate(input: string) {
+        var parts = input.match(/(\d+)/g);
+        // note parts[1]-1
+        if(parts != undefined)
+            return new Date(parseInt(parts[2]), parseInt(parts[1])-1, parseInt(parts[0]));
         else
             return new Date();
-    }
-
-    private _getDayName(input: any) : string {
-        let date = this._parseDate(input);
-        return this.daynames[date.getDay()];
-    }
-    private _getShortDate(input: any) : string {
-        let date = this._parseDate(input);
-        return date.getDate() + "." + date.getMonth();
     }
 
     private _showNextWeek() {
@@ -289,17 +275,10 @@ export class HAWebUntisCard extends LitElement {
             return false;
     }
 
-    private _getHourString(time: number) {
-        let timeString = time.toString();
-        if(timeString.length > 3)
-            return timeString.substring(0,2) + ":" + timeString.substring(2,4);
-        else
-            return "0" + timeString.substring(0,1) + ":" + timeString.substring(1,3);
-    }
     
-    private _getHourActiveStyle(time: number, classprefix: string) : string {
+    private _getHourActiveStyle(time: string, classprefix: string) : string {
         if(this.lastHour)
-            if(time/100 > this.lastHour)
+            if(Number(time.substring(0,2)) > this.lastHour)
                 return classprefix + 'inactive'
             else
                 return classprefix
@@ -330,8 +309,6 @@ export class HAWebUntisCard extends LitElement {
         
         this.getTimetableFromUrl().then(timetable => {
             if(timetable != undefined) {
-                if(this.debug)
-                    console.debug(timetable);
                 this.timetable = timetable;
                 if(this.timetable.data != undefined) {
                     this.visibleTimetable = this.timetable.data.timetable.slice(this.startIndex,5) ?? [];
@@ -381,6 +358,8 @@ export class HAWebUntisCard extends LitElement {
         this.startIndex = 0;
     }
 
+    // http://192.168.178.116:8234/webuntis/x/x/nessa.webuntis.com/RobertG%20Gym/KEC/E75HFIUCPA5HTVRV/4229900/false
+    
     // http://192.168.178.116:8234/webuntis/x/x/nessa.webuntis.com/RobertG%20Gym/KEC/E75HFIUCPA5HTVRV/4229900/false
     
     getTimetableFromUrl() : Promise<TimetableResult> {
