@@ -163,3 +163,29 @@
     color: white;
     font-size: smaller;
 }
+
+.homework {
+    display: table;
+}
+
+.homeworkDate {
+    color: var(--sidebar-selected-icon-color);
+    display: flex;
+    flex-direction: row;
+}
+.homeworkLesson {
+    color: var(--sidebar-selected-icon-color);
+}
+.homeworkDueDate {
+    color: var(--sidebar-selected-icon-color);
+}
+.homeworkDate {
+    color: var(--sidebar-selected-icon-color);
+    font-size: smaller;
+}
+.homeworkText {
+    display: flex;
+}
+.homeworkTextContent {
+    flex-direction: column;
+}

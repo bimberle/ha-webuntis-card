@@ -145,11 +145,20 @@ export class HAWebUntisCard extends LitElement {
                     </div>
                 </div>
                 <div>Hausaufgaben</div>
-                <div>
+                <div class='homework'>
                     ${this.homework.map((homework: Homework, index: number) => {
                         return html`
-                            <div>${homework.datum}</div><div>${homework.faelligkeitsdatum}</div><div>${homework.fach}</div><div>${homework.text}</div>
-                            `; 
+                        <div class='homeworkRow'>
+                            <div class='homeworkDate'>
+                                <div class='homeworkLesson'>${homework.fach}</div>
+                                <div class='homeworkDueDate'>${homework.faelligkeitsdatum}</div>
+                                <div class='homeworkDate'>${homework.datum}</div>
+                            </div>
+                            <div class='homeworkText'>
+                                <div class='homeworkTextContent'>${homework.text}</div>
+                                <div class='homeworkTextContent'>${homework.remark}</div>
+                            </div>
+                        </div>`; 
                     }) }
                 </div>
             </ha-card>
@@ -216,7 +225,7 @@ export class HAWebUntisCard extends LitElement {
                 urlSet = true;
             
             return html`
-            ${urlSet ? html`<a target='_blank' href=${this.timetable.timetableurl}'>` : ``}
+            ${urlSet ? html`<a target='_blank' href='${this.timetable.timetableurl}'>` : ``}
             <div class="notificationbadge">
                 <ha-icon icon='mdi:bell'></ha-icon>
                 <div class='badge'>${this.timetable.notifications}</div>
