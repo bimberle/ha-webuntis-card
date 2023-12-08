@@ -171,10 +171,10 @@ export class HAWebUntisCard extends LitElement {
 
 
        /*  <div class='homeworkTextContent'>
-                                    <div class='homeworkTextCol'>${homework.text}</div>
-                                    <div class='homeworkDueDate'>${homework.datum}</div>
-                                </div>
-                                <div class='homeworkTextContent'>${homework.remark}</div> */
+            <div class='homeworkTextCol'>${homework.text}</div>
+            <div class='homeworkDueDate'>${homework.datum}</div>
+        </div>
+        <div class='homeworkTextContent'>${homework.remark}</div> */
     
     }
 
@@ -302,6 +302,21 @@ export class HAWebUntisCard extends LitElement {
             return classprefix
     }
 
+    private canRunQuery(): boolean {
+        var dateDiff = ((new Date().getTime() - this.lastCall.getTime()) / 1000) / 60;
+        if(dateDiff > 15) {
+            if(localStorage.getItem("webuntiscallrunning") == "true")
+                return false;
+            else
+                {
+                    localStorage.setItem("webuntiscallrunning", "true");
+                    return true;
+                }
+        }
+        else
+            return false;
+    }
+
     /**
      * CSS for the card
      */
@@ -323,27 +338,25 @@ export class HAWebUntisCard extends LitElement {
 
         this.actualDate = this.getCurrentDateString();
         
-        var dateDiff = ((new Date().getTime() - this.lastCall.getTime()) / 1000) / 60;
-
-        if(dateDiff > 15) {
-        this.getTimetableFromUrl().then(timetable => {
-            if(timetable != undefined) {
-                this.timetable = timetable;
-                if(this.timetable.data != undefined) {
-                    this.visibleTimetable = this.timetable.data.timetable.slice(this.startIndex,5) ?? [];
-                    this.dayCount = this.timetable.data.timetable.length ?? 0;
-                    //if(!this.isComingDateVisible())
-                    //    this._showNextWeek();
-                    this.setLastVisibleDate();
+        if(this.canRunQuery()) {
+            this.getTimetableFromUrl().then(timetable => {
+                if(timetable != undefined) {
+                    this.timetable = timetable;
+                    if(this.timetable.data != undefined) {
+                        this.visibleTimetable = this.timetable.data.timetable.slice(this.startIndex,5) ?? [];
+                        this.dayCount = this.timetable.data.timetable.length ?? 0;
+                        //if(!this.isComingDateVisible())
+                        //    this._showNextWeek();
+                        this.setLastVisibleDate();
+                    }
+                    if(this.timetable.data.klausuren != undefined) {
+                        this.klausuren = this.timetable.data.klausuren;
+                    }
+                    if(this.timetable.data.homework != undefined) {
+                        this.homework = this.timetable.data.homework;
+                    }
                 }
-                if(this.timetable.data.klausuren != undefined) {
-                    this.klausuren = this.timetable.data.klausuren;
-                }
-                if(this.timetable.data.homework != undefined) {
-                    this.homework = this.timetable.data.homework;
-                }
-            }
-        });
+            });
         
     }
             
@@ -396,6 +409,8 @@ export class HAWebUntisCard extends LitElement {
         if(this.debug)
             console.debug(url);
         
+        
+
         return fetch(url)
 		.then((response) => response.json()) // Parse the response in JSON:
 		.then((response) => {
