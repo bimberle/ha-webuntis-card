@@ -1,7 +1,7 @@
 import { HomeAssistant } from "../ha-types";
 import { html, css, LitElement, CSSResultGroup, TemplateResult, PropertyValues } from "lit";
 import { property } from "lit/decorators";
-import { ICardConfig, Lesson, StartTime, Day, TimetableResult, Klausur } from "../types";
+import { ICardConfig, Lesson, StartTime, Day, TimetableResult, Klausur, Homework } from "../types";
 import styles from "./card.css";
 //import { hasConfigOrEntityChanged } from "../has-changed";
 //import { hasConfigOrEntityChanged } from "../has-changed";
@@ -52,6 +52,7 @@ export class HAWebUntisCard extends LitElement {
     private _hass: any;
     //private timetablestring: string = "";
     private klausuren: Klausur[] = [];
+    private homework: Homework[] = [];
 
     private startIndex: number = 0;
     private dayCount: number = 0;
@@ -143,11 +144,11 @@ export class HAWebUntisCard extends LitElement {
                         })}
                     </div>
                 </div>
-                <div>Klausuren</div>
+                <div>Hausaufgaben</div>
                 <div>
-                    ${this.klausuren.map((klausur: Klausur, index: number) => {
+                    ${this.homework.map((homework: Homework, index: number) => {
                         return html`
-                            <div>${klausur.datum}</div><div>${klausur.uhrzeit}</div><div>${klausur.fach}</div>
+                            <div>${homework.datum}</div><div>${homework.faelligkeitsdatum}</div><div>${homework.fach}</div><div>${homework.text}</div>
                             `; 
                     }) }
                 </div>
@@ -319,6 +320,9 @@ export class HAWebUntisCard extends LitElement {
                 }
                 if(this.timetable.data.klausuren != undefined) {
                     this.klausuren = this.timetable.data.klausuren;
+                }
+                if(this.timetable.data.homework != undefined) {
+                    this.homework = this.timetable.data.homework;
                 }
             }
         });

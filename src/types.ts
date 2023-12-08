@@ -23,6 +23,16 @@ export interface TimetableData {
     timetable: Day[];
     startTimetimes: StartTime[];
     klausuren?: any;
+    homework?: Homework[];
+}
+
+export interface Homework {
+    datum: string;
+    faelligkeitsdatum : string;
+    fach : string;
+    text : string;
+    remark : string;
+    lehrer : string;
 }
 
 export interface StartTime {
