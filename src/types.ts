@@ -43,7 +43,7 @@ export interface Klausur {
 
 export interface Lesson {
     classCount: Number;
-    endeTIme: string;
+    endeTime: string;
     fach: string;
     fachLang: string;
     lehrer: string;
