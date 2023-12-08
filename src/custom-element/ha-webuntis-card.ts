@@ -344,7 +344,7 @@ export class HAWebUntisCard extends LitElement {
                 }
             }
         });
-        this.lastCall = new Date();
+        
     }
             
     }
@@ -393,12 +393,13 @@ export class HAWebUntisCard extends LitElement {
         else
             url = url + "/false";
 
-            if(this.debug)
-                console.debug(url);
+        if(this.debug)
+            console.debug(url);
         
         return fetch(url)
 		.then((response) => response.json()) // Parse the response in JSON:
 		.then((response) => {
+            this.lastCall = new Date();
             if(response.data.klausuren == undefined || response.data.klausuren == true)
                 response.data.klausuren = [];
             if(this.debug)
