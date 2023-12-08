@@ -154,11 +154,8 @@ export class HAWebUntisCard extends LitElement {
                                 <div class='homeworkDueDate'>${homework.faelligkeitsdatum}</div>
                             </div>
                             <div class='homeworkTextCol'>
-                                <div class='homeworkTextContent'>
-                                    <div class='homeworkTextCol'>${homework.text}</div>
-                                    <div class='homeworkDueDate'>${homework.datum}</div>
-                                </div>
-                                <div class='homeworkTextContent'>${homework.remark}</div>
+                                <div>${homework.text} ${homework.remark}</div>
+                                
                             </div>
                         </div>`; 
                     }) }
@@ -171,6 +168,12 @@ export class HAWebUntisCard extends LitElement {
             return html`<div>Loading...</div>`;
         }   
 
+
+       /*  <div class='homeworkTextContent'>
+                                    <div class='homeworkTextCol'>${homework.text}</div>
+                                    <div class='homeworkDueDate'>${homework.datum}</div>
+                                </div>
+                                <div class='homeworkTextContent'>${homework.remark}</div> */
     
     }
 
