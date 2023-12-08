@@ -167,6 +167,12 @@
 .homework {
     display: table;
 }
+.homeworkRow {
+    padding: 5px;
+    border: 1px solid #00aaf4;
+    margin: 5px;
+    border-radius: 8px;
+}
 
 .homeworkDate {
     color: var(--sidebar-selected-icon-color);
@@ -175,16 +181,22 @@
 }
 .homeworkLesson {
     color: var(--sidebar-selected-icon-color);
+    font-size: large;
+    text-align: center;
 }
 .homeworkDueDate {
     color: var(--sidebar-selected-icon-color);
+    text-align: center;
 }
-.homeworkDate {
+.homeworkDateCol {
     color: var(--sidebar-selected-icon-color);
-    font-size: smaller;
+    width: 20%;
+    flex-direction: column;
 }
-.homeworkText {
+.homeworkTextCol {
     display: flex;
+    width: 80%;
+    flex-direction: column;
 }
 .homeworkTextContent {
     flex-direction: column;

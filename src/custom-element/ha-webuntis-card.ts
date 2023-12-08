@@ -149,13 +149,15 @@ export class HAWebUntisCard extends LitElement {
                     ${this.homework.map((homework: Homework, index: number) => {
                         return html`
                         <div class='homeworkRow'>
-                            <div class='homeworkDate'>
+                            <div class='homeworkDateCol'>
                                 <div class='homeworkLesson'>${homework.fach}</div>
                                 <div class='homeworkDueDate'>${homework.faelligkeitsdatum}</div>
-                                <div class='homeworkDate'>${homework.datum}</div>
                             </div>
-                            <div class='homeworkText'>
-                                <div class='homeworkTextContent'>${homework.text}</div>
+                            <div class='homeworkTextCol'>
+                                <div class='homeworkTextContent'>
+                                    <div class='homeworkTextCol'>${homework.text}</div>
+                                    <div class='homeworkDueDate'>${homework.datum}</div>
+                                </div>
                                 <div class='homeworkTextContent'>${homework.remark}</div>
                             </div>
                         </div>`; 
