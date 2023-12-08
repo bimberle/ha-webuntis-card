@@ -60,6 +60,7 @@ export class HAWebUntisCard extends LitElement {
     @property({ attribute: false })
     private actualDate: string = "";
     private lastVisibleDate: Date = new Date();
+    private lastCall: Date = new Date(2022,1,1);
     
 
 
@@ -322,6 +323,9 @@ export class HAWebUntisCard extends LitElement {
 
         this.actualDate = this.getCurrentDateString();
         
+        var dateDiff = ((new Date().getTime() - this.lastCall.getTime()) / 1000) / 60;
+
+        if(dateDiff > 15) {
         this.getTimetableFromUrl().then(timetable => {
             if(timetable != undefined) {
                 this.timetable = timetable;
@@ -340,6 +344,8 @@ export class HAWebUntisCard extends LitElement {
                 }
             }
         });
+        this.lastCall = new Date();
+    }
             
     }
 
