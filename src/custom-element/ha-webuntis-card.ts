@@ -302,7 +302,7 @@ export class HAWebUntisCard extends LitElement {
 
     private setLock()
     {
-        localStorage.setItem(this.simStoreItemName, new Date().toDateString());
+        localStorage.setItem(this.simStoreItemName, new Date().toUTCString());
     }
     private removeLock() : void {
         localStorage.removeItem(this.simStoreItemName);
