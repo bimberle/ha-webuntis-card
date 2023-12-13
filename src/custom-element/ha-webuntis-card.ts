@@ -291,19 +291,36 @@ export class HAWebUntisCard extends LitElement {
             return false;
     }
 
+    private getDateDiffInSeconds(date1?: Date, date2?: Date)
+    {
+        if(!date1)
+            date1 = new Date();
+        if(!date2)
+            date2 = new Date();
+        return (date2.getTime() - date1.getTime()) / 1000;
+    }
+
     private canRunQuery(): boolean {
-        var dateDiff = ((new Date().getTime() - this.lastCall.getTime()) / 1000) / 60;
-        if(dateDiff > 15) {
-            if(localStorage.getItem(this.simStoreItemName) == "true")
-                return false;
+        let returnValue = false;
+        var dateDiff = this.getDateDiffInSeconds(this.lastCall);
+        if(dateDiff > 900) {
+            let callStarted = localStorage.getItem(this.simStoreItemName);
+            if(callStarted)
+            {
+                if(this.getDateDiffInSeconds(new Date(callStarted)) > 10)
+                {
+                    returnValue = true;
+                }
+            }
             else
                 {
-                    localStorage.setItem(this.simStoreItemName, "true");
-                    return true;
+                    returnValue = true;
                 }
         }
-        else
-            return false;
+        if(returnValue)
+            localStorage.setItem(this.simStoreItemName, new Date().toDateString());
+        
+        return returnValue;
     }
 
     private removeLock() : void {
