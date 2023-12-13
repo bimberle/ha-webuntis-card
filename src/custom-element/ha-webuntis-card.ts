@@ -410,7 +410,6 @@ export class HAWebUntisCard extends LitElement {
     // http://192.168.178.116:8234/webuntis/x/x/nessa.webuntis.com/RobertG%20Gym/KEC/E75HFIUCPA5HTVRV/4229900/false
     
     getTimetableFromUrl() : Promise<TimetableResult> {
-        let parsedResponse: TimetableResult;
         let url = this.api_url + "/x/x/" + this.webuntis_url + "/" + this.webuntis_school + "/" + this.webuntis_user + "/" + this.webuntis_key + "/" + this.webuntis_schoolnumber;
         if(this.debug)
             url = url + "/true";
