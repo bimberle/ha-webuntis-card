@@ -300,33 +300,35 @@ export class HAWebUntisCard extends LitElement {
         return (date2.getTime() - date1.getTime()) / 1000;
     }
 
-    private canRunQuery(): boolean {
-        let returnValue = false;
-        var dateDiff = this.getDateDiffInSeconds(this.lastCall);
-        if(dateDiff > 900) {
-            let callStarted = localStorage.getItem(this.simStoreItemName);
-            if(callStarted)
-            {
-                if(this.getDateDiffInSeconds(new Date(callStarted)) > 10)
-                {
-                    returnValue = true;
-                }
-            }
-            else
-                {
-                    returnValue = true;
-                }
-        }
-        if(returnValue)
-            localStorage.setItem(this.simStoreItemName, new Date().toDateString());
-        
-        return returnValue;
+    private setLock()
+    {
+        localStorage.setItem(this.simStoreItemName, new Date().toDateString());
     }
-
     private removeLock() : void {
         localStorage.removeItem(this.simStoreItemName);
         this.lastCall = new Date();
     }
+
+    private canRunQuery(): boolean {
+        let returnValue = false;
+        var dateDiffSinceLastCall = this.getDateDiffInSeconds(this.lastCall) / 60;
+        if(dateDiffSinceLastCall > 15) {
+            var dateDiff = this.getDateDiffInSeconds(this.lastCall);
+            if(dateDiff > 900) {
+                let callStarted = localStorage.getItem(this.simStoreItemName);
+                if(callStarted == null)
+                    returnValue = true;
+
+                // Wenn gesetzt und das schon 5 Sekunden her ist, dann abfragen
+                if(callStarted != null && this.getDateDiffInSeconds(new Date(callStarted)) > 5)
+                    returnValue = true;
+            }
+        }
+        
+        return returnValue;
+    }
+
+    
 
     
     private _getHourActiveStyle(time: string, classprefix: string) : string {
@@ -359,32 +361,30 @@ export class HAWebUntisCard extends LitElement {
         this._hass = hass;
 
         this.actualDate = this.getCurrentDateString();
-        
-        var dateDiff = ((new Date().getTime() - this.lastCall.getTime()) / 1000) / 60;
-
-        if(dateDiff > 15) {
-            if(this.canRunQuery()) {
-                this.getTimetableFromUrl().then(timetable => {
-                    this.removeLock();
-                    if(timetable != undefined) {
-                        this.timetable = timetable;
-                        if(this.timetable.data != undefined) {
-                            this.visibleTimetable = this.timetable.data.timetable.slice(this.startIndex,5) ?? [];
-                            this.dayCount = this.timetable.data.timetable.length ?? 0;
-                            //if(!this.isComingDateVisible())
-                            //    this._showNextWeek();
-                            this.setLastVisibleDate();
-                        }
-                        if(this.timetable?.data?.klausuren != undefined) {
-                            this.klausuren = this.timetable.data.klausuren;
-                        }
-                        if(this.timetable?.data?.homework != undefined) {
-                            this.homework = this.timetable.data.homework;
-                        }
+    
+        if(this.canRunQuery()) {
+            this.setLock();
+            this.getTimetableFromUrl().then(timetable => {
+                this.removeLock();
+                if(timetable != undefined) {
+                    this.timetable = timetable;
+                    if(this.timetable.data != undefined) {
+                        this.visibleTimetable = this.timetable.data.timetable.slice(this.startIndex,5) ?? [];
+                        this.dayCount = this.timetable.data.timetable.length ?? 0;
+                        //if(!this.isComingDateVisible())
+                        //    this._showNextWeek();
+                        this.setLastVisibleDate();
                     }
-                });
-            }
+                    if(this.timetable?.data?.klausuren != undefined) {
+                        this.klausuren = this.timetable.data.klausuren;
+                    }
+                    if(this.timetable?.data?.homework != undefined) {
+                        this.homework = this.timetable.data.homework;
+                    }
+                }
+            });
         }
+        
             
     }
 
