@@ -61,7 +61,7 @@ export class HAWebUntisCard extends LitElement {
     private actualDate: string = "";
     private lastVisibleDate: Date = new Date();
     private lastCall: Date = new Date(2022,1,1);
-    
+    private simStoreItemName: string = "webuntiscallrunning";
 
 
     
@@ -97,7 +97,7 @@ export class HAWebUntisCard extends LitElement {
                                 <div class='hourheader'>&nbsp;</div>
                                 <div class='daydate'>&nbsp;</div>
                                 <div class='hours'>
-                                    ${this.timetable.data.startTimetimes.map( (time: StartTime, index: number) => {
+                                    ${this.timetable?.data?.startTimetimes.map( (time: StartTime, index: number) => {
                                             if(this.lastHour == undefined || this.lastHour >= Number(time.key.substring(0,2)))
                                             {
                                                 return html`
@@ -171,10 +171,10 @@ export class HAWebUntisCard extends LitElement {
 
 
        /*  <div class='homeworkTextContent'>
-            <div class='homeworkTextCol'>${homework.text}</div>
-            <div class='homeworkDueDate'>${homework.datum}</div>
-        </div>
-        <div class='homeworkTextContent'>${homework.remark}</div> */
+                                    <div class='homeworkTextCol'>${homework.text}</div>
+                                    <div class='homeworkDueDate'>${homework.datum}</div>
+                                </div>
+                                <div class='homeworkTextContent'>${homework.remark}</div> */
     
     }
 
@@ -255,14 +255,14 @@ export class HAWebUntisCard extends LitElement {
     private _showNextWeek() {
         this.startIndex += + 5;
         var ende = (this.startIndex + 5)  > this.dayCount ? this.dayCount : this.startIndex + 5;
-        this.visibleTimetable = this.timetable?.data.timetable.slice(this.startIndex, ende) ?? [];
+        this.visibleTimetable = this.timetable?.data?.timetable.slice(this.startIndex, ende) ?? [];
         this.setLastVisibleDate();
     }
     private _showLastWeek() {
         this.startIndex -= 5;
         if(this.startIndex < 0)
             this.startIndex = 0;
-        this.visibleTimetable = this.timetable?.data.timetable.slice(this.startIndex, this.startIndex+5) ?? []
+        this.visibleTimetable = this.timetable?.data?.timetable.slice(this.startIndex, this.startIndex+5) ?? []
         this.setLastVisibleDate();
     }
 
@@ -291,6 +291,26 @@ export class HAWebUntisCard extends LitElement {
             return false;
     }
 
+    private canRunQuery(): boolean {
+        var dateDiff = ((new Date().getTime() - this.lastCall.getTime()) / 1000) / 60;
+        if(dateDiff > 15) {
+            if(localStorage.getItem(this.simStoreItemName) == "true")
+                return false;
+            else
+                {
+                    localStorage.setItem(this.simStoreItemName, "true");
+                    return true;
+                }
+        }
+        else
+            return false;
+    }
+
+    private removeLock() : void {
+        localStorage.removeItem(this.simStoreItemName);
+        this.lastCall = new Date();
+    }
+
     
     private _getHourActiveStyle(time: string, classprefix: string) : string {
         if(this.lastHour)
@@ -300,21 +320,6 @@ export class HAWebUntisCard extends LitElement {
                 return classprefix
         else
             return classprefix
-    }
-
-    private canRunQuery(): boolean {
-        var dateDiff = ((new Date().getTime() - this.lastCall.getTime()) / 1000) / 60;
-        if(dateDiff > 15) {
-            if(localStorage.getItem("webuntiscallrunning") == "true")
-                return false;
-            else
-                {
-                    localStorage.setItem("webuntiscallrunning", "true");
-                    return true;
-                }
-        }
-        else
-            return false;
     }
 
     /**
@@ -338,27 +343,31 @@ export class HAWebUntisCard extends LitElement {
 
         this.actualDate = this.getCurrentDateString();
         
-        if(this.canRunQuery()) {
-            this.getTimetableFromUrl().then(timetable => {
-                if(timetable != undefined) {
-                    this.timetable = timetable;
-                    if(this.timetable.data != undefined) {
-                        this.visibleTimetable = this.timetable.data.timetable.slice(this.startIndex,5) ?? [];
-                        this.dayCount = this.timetable.data.timetable.length ?? 0;
-                        //if(!this.isComingDateVisible())
-                        //    this._showNextWeek();
-                        this.setLastVisibleDate();
+        var dateDiff = ((new Date().getTime() - this.lastCall.getTime()) / 1000) / 60;
+
+        if(dateDiff > 15) {
+            if(this.canRunQuery()) {
+                this.getTimetableFromUrl().then(timetable => {
+                    this.removeLock();
+                    if(timetable != undefined) {
+                        this.timetable = timetable;
+                        if(this.timetable.data != undefined) {
+                            this.visibleTimetable = this.timetable.data.timetable.slice(this.startIndex,5) ?? [];
+                            this.dayCount = this.timetable.data.timetable.length ?? 0;
+                            //if(!this.isComingDateVisible())
+                            //    this._showNextWeek();
+                            this.setLastVisibleDate();
+                        }
+                        if(this.timetable?.data?.klausuren != undefined) {
+                            this.klausuren = this.timetable.data.klausuren;
+                        }
+                        if(this.timetable?.data?.homework != undefined) {
+                            this.homework = this.timetable.data.homework;
+                        }
                     }
-                    if(this.timetable.data.klausuren != undefined) {
-                        this.klausuren = this.timetable.data.klausuren;
-                    }
-                    if(this.timetable.data.homework != undefined) {
-                        this.homework = this.timetable.data.homework;
-                    }
-                }
-            });
-        
-    }
+                });
+            }
+        }
             
     }
 
@@ -393,6 +402,7 @@ export class HAWebUntisCard extends LitElement {
 
 
         this.startIndex = 0;
+        
     }
 
     // http://192.168.178.116:8234/webuntis/x/x/nessa.webuntis.com/RobertG%20Gym/KEC/E75HFIUCPA5HTVRV/4229900/false
@@ -400,21 +410,16 @@ export class HAWebUntisCard extends LitElement {
     // http://192.168.178.116:8234/webuntis/x/x/nessa.webuntis.com/RobertG%20Gym/KEC/E75HFIUCPA5HTVRV/4229900/false
     
     getTimetableFromUrl() : Promise<TimetableResult> {
-        var url = this.api_url + "/x/x/" + this.webuntis_url + "/" + this.webuntis_school + "/" + this.webuntis_user + "/" + this.webuntis_key + "/" + this.webuntis_schoolnumber;
+        let parsedResponse: TimetableResult;
+        let url = this.api_url + "/x/x/" + this.webuntis_url + "/" + this.webuntis_school + "/" + this.webuntis_user + "/" + this.webuntis_key + "/" + this.webuntis_schoolnumber;
         if(this.debug)
             url = url + "/true";
         else
             url = url + "/false";
-
-        if(this.debug)
-            console.debug(url);
         
-        
-
         return fetch(url)
 		.then((response) => response.json()) // Parse the response in JSON:
 		.then((response) => {
-            this.lastCall = new Date();
             if(response.data.klausuren == undefined || response.data.klausuren == true)
                 response.data.klausuren = [];
             if(this.debug)
