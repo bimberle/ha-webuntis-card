@@ -151,7 +151,7 @@ export class HAWebUntisCard extends LitElement {
                         })}
                     </div>
                 </div>
-                <div>Klausuren</div>
+                ${this.klausuren.length > 0 ? html `<div>Klausuren</div>` : html ``}
                 <div class='klausuren'>
                     ${this.klausuren.map((klausur: Klausur, index: number) => {
                         return html`
@@ -167,7 +167,7 @@ export class HAWebUntisCard extends LitElement {
                         </div>`; 
                     }) }
                 </div>
-                <div>Hausaufgaben</div>
+                ${this.homework.length > 0 ? html `<div>Hausaufgaben</div>` : html ``}
                 <div class='homework'>
                     ${this.homework.map((homework: Homework, index: number) => {
                         return html`
