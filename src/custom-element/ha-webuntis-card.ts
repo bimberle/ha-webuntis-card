@@ -35,6 +35,12 @@ export class HAWebUntisCard extends LitElement {
     @property({ attribute: false })
     private webuntis_schoolnumber?: string
 
+    @property({ attribute: false })
+    private iserv_password?: string
+
+    @property({ attribute: false })
+    private iserv_address?: string
+
     @property({ attribute: false})
     private timetable?: TimetableResult;
 
@@ -144,6 +150,22 @@ export class HAWebUntisCard extends LitElement {
                             //this.renderDay(day);
                         })}
                     </div>
+                </div>
+                <div>Klausuren</div>
+                <div class='klausuren'>
+                    ${this.klausuren.map((klausur: Klausur, index: number) => {
+                        return html`
+                        <div class='klausurenRow'>
+                            <div class='klausurenDateCol'>
+                                <div class='klausurenLesson'>${klausur.fach}</div>
+                                <div class='klausurenDueDate'>${klausur.datum}</div>
+                            </div>
+                            <div class='klausurenTextCol'>
+                                <div>${klausur.uhrzeit}</div>
+                                
+                            </div>
+                        </div>`; 
+                    }) }
                 </div>
                 <div>Hausaufgaben</div>
                 <div class='homework'>
@@ -383,6 +405,13 @@ export class HAWebUntisCard extends LitElement {
                     }
                 }
             });
+
+            if(this.iserv_address) {
+                this.getKlausurenFromUrl().then(klausuren => {
+                    if(this.klausuren != undefined)
+                        this.klausuren = klausuren;
+                });
+            }
         }
         
             
@@ -406,6 +435,10 @@ export class HAWebUntisCard extends LitElement {
             this.webuntis_url = config.webuntis_url
         if(config.webuntis_user)
             this.webuntis_user = config.webuntis_user
+        if(config.iserv_address)
+            this.iserv_address = config.iserv_address
+        if(config.iserv_password)
+            this.iserv_password = config.iserv_password
         if(config.webuntis_key)
             this.webuntis_key =config.webuntis_key
         if(config.webuntis_schoolnumber)
@@ -427,7 +460,7 @@ export class HAWebUntisCard extends LitElement {
     // http://192.168.178.116:8234/webuntis/x/x/nessa.webuntis.com/RobertG%20Gym/KEC/E75HFIUCPA5HTVRV/4229900/false
     
     getTimetableFromUrl() : Promise<TimetableResult> {
-        let url = this.api_url + "/x/x/" + this.webuntis_url + "/" + this.webuntis_school + "/" + this.webuntis_user + "/" + this.webuntis_key + "/" + this.webuntis_schoolnumber;
+        let url = this.api_url + "/webuntis/x/x/" + this.webuntis_url + "/" + this.webuntis_school + "/" + this.webuntis_user + "/" + this.webuntis_key + "/" + this.webuntis_schoolnumber;
         if(this.debug)
             url = url + "/true";
         else
@@ -443,6 +476,21 @@ export class HAWebUntisCard extends LitElement {
 			return response as TimetableResult;
 		});
 
+    }
+
+    getKlausurenFromUrl() : Promise<Klausur[]> {
+        // http://192.168.178.116:8234/iserv/rgg-hausach.de/david.kech/131628%20131628/2
+        let iservUrl = this.api_url + "/iserv/" + this.iserv_address + "/" + this.webuntis_user + "/" + this.iserv_password + "/2"
+        
+        return fetch(iservUrl)
+		.then((response) => response.json()) // Parse the response in JSON:
+		.then((response) => {
+            if(response.data.klausuren == undefined || response.data.klausuren == true)
+                response.data.klausuren = [];
+            if(this.debug)
+                console.debug(response);
+			return response as Klausur[];
+		});
     }
 
 

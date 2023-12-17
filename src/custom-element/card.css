@@ -202,3 +202,42 @@
 .homeworkTextContent {
     flex-direction: column;
 }
+
+.klausuren {
+    display: table;
+}
+.klausurenRow {
+    padding: 5px;
+    border: 1px solid #f40000;
+    margin: 5px;
+    border-radius: 8px;
+    display: flex;
+}
+
+.klausurenDate {
+    color: #f40000;
+    display: flex;
+    flex-direction: row;
+}
+.klausurenLesson {
+    color: #f40000;
+    font-size: large;
+    text-align: center;
+}
+.klausurenDueDate {
+    color: #f40000;
+    text-align: center;
+}
+.klausurenDateCol {
+    color: #f40000;
+    width: 20%;
+    flex-direction: column;
+}
+.klausurenTextCol {
+    display: flex;
+    width: 80%;
+    flex-direction: column;
+}
+.klausurenTextContent {
+    flex-direction: column;
+}

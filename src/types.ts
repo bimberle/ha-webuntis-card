@@ -5,6 +5,8 @@ export interface ICardConfig {
     webuntis_url?: string;
     webuntis_school?: string;
     webuntis_user?: string;
+    iserv_password?: string;
+    iserv_address?: string;
     webuntis_key?: string;
     webuntis_schoolnumber?: string;
     lastHour?: number;
