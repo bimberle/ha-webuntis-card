@@ -485,11 +485,9 @@ export class HAWebUntisCard extends LitElement {
         return fetch(iservUrl)
 		.then((response) => response.json()) // Parse the response in JSON:
 		.then((response) => {
-            if(response.data.klausuren == undefined || response.data.klausuren == true)
-                response.data.klausuren = [];
             if(this.debug)
                 console.debug(response);
-			return response as Klausur[];
+			return response.klausuren as Klausur[];
 		});
     }
 
