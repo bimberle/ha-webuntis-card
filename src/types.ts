@@ -66,4 +66,5 @@ export interface Lesson {
     tagname: string;
     type: string;
     sondertext: string;
+    code: string;
 }

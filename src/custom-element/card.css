@@ -88,6 +88,9 @@
     display: flex;
     flex-direction: column;
 }
+.lessoncancelled {
+    text-decoration: line-through;
+}
 
 .lessonheader {
     text-align: center;
