@@ -494,7 +494,11 @@ export class HAWebUntisCard extends LitElement {
     getKlausurenFromUrl() : Promise<Klausur[]> {
         // http://192.168.178.116:8234/iserv/rgg-hausach.de/david.kech/131628%20131628/2
         let iservUrl = this.api_url + "/iserv/" + this.iserv_address + "/" + this.webuntis_user + "/" + this.iserv_password + "/2"
-        
+        if(this.debug)
+            iservUrl = iservUrl + "/true";
+        else
+            iservUrl = iservUrl + "/false";
+
         return fetch(iservUrl)
 		.then((response) => response.json()) // Parse the response in JSON:
 		.then((response) => {
