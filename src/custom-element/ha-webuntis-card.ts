@@ -331,6 +331,10 @@ export class HAWebUntisCard extends LitElement {
         this.lastCall = new Date();
     }
 
+    async delay(ms: number) {
+        await new Promise<void>(resolve => setTimeout(()=>resolve(), ms)).then(()=>console.log("fired"));
+    }
+
     private canRunQuery(): boolean {
         let returnValue = false;
         var dateDiffSinceLastCall = this.getDateDiffInSeconds(this.lastCall) / 60;
@@ -420,10 +424,14 @@ export class HAWebUntisCard extends LitElement {
             });
 
             if(this.iserv_address) {
-                this.getKlausurenFromUrl().then(klausuren => {
-                    if(this.klausuren != undefined)
-                        this.klausuren = klausuren;
+                this.delay(2000).then(any=>{
+                    //your task after delay.
+                    this.getKlausurenFromUrl().then(klausuren => {
+                        if(this.klausuren != undefined)
+                            this.klausuren = klausuren;
+                    });
                 });
+                
             }
         }
         
