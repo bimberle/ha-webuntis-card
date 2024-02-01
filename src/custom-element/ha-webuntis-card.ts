@@ -161,7 +161,7 @@ export class HAWebUntisCard extends LitElement {
                                 <div class='klausurenDueDate'>${klausur.datum}</div>
                             </div>
                             <div class='klausurenTextCol'>
-                                <div>${klausur.uhrzeit}</div>
+                                <div>${klausur.description}</div>
                                 
                             </div>
                         </div>`; 

@@ -51,6 +51,7 @@ export interface Klausur {
     datum: string;
     uhrzeit: string;
     fach: string;
+    description: string;
 }
 
 export interface Lesson {
